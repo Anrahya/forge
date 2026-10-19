@@ -24,6 +24,10 @@ Desktop app: open Settings, then Plugins, then Add plugin, and enter `github:Anr
 
 Startup logs print `[forge-dsh] loaded forgeRoot=<path>`. Remove with `dsh plugin --profile web remove forge-dsh`.
 
+pnpm prints "Issues with peer dependencies found" during the add. That is expected: the plugin's peers are DSH's own packages, which the running host supplies at load time rather than the profile installing a second copy (DSH `docs/user/develop/basic/publish.md`).
+
+Verified on 2026-10-20 with dsh 0.2.1-rc.2: `dsh plugin --profile <name> add github:Anrahya/forge#v0.1.0` creates the profile, registers the bundle, and `--dump-config` shows the `forge-dsh` layer; the plugin module imports and waits on the `tools` and `skills` services. A full host boot with a real task has not been run yet.
+
 Requirements: DSH 0.2.1-rc.2 (also accepts 0.2.0-rc.2, where only `forge_spawn` is expected to fail), Node 22.19 or newer, bash, git. The gate scripts need the target project's own toolchain (node and npm for TypeScript, cargo for Rust).
 
 ## Use
