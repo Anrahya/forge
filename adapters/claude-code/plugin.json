@@ -1,0 +1,7 @@
+{
+  "name": "forge",
+  "version": "0.1.0",
+  "description": "Verification-first engineering workflow for non-frontier models: phase skills, per-phase tool policy, and a verify gate before a turn may end.",
+  "keywords": ["forge", "verification", "workflow", "skills"],
+  "hooks": "./adapters/claude-code/hooks.json"
+}

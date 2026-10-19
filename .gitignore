@@ -1,0 +1,6 @@
+node_modules/
+.forge/
+evals/results/*.json
+scripts/gates/fixtures/ts/node_modules/
+scripts/gates/fixtures/rust/target/
+*.tgz

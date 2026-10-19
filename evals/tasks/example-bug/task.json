@@ -1,0 +1,9 @@
+{
+  "id": "example-bug",
+  "type": "bug",
+  "repo": "<git url or local path>",
+  "base": "<commit sha>",
+  "prompt": "The export command writes an empty file when the input has a trailing newline. Fix it.",
+  "hidden_check": "cp -r hidden/tests/* tests/ && npx vitest run",
+  "budget": 150
+}

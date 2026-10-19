@@ -1,0 +1,9 @@
+id: forge-dsh
+entry: src/index.ts
+marker: "[forge-dsh] loaded"
+kind: function
+profile: web
+hotReload:
+  artifacts:
+    - src/index.ts
+    - lib/index.js

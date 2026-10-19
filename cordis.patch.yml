@@ -1,0 +1,5 @@
+# Bundle layer for `dsh plugin add`. The row names the package, so Node
+# resolution finds the installed code (DSH docs/user/develop/basic/publish.md).
+- insert:
+    - id: forge-dsh
+      name: forge-dsh
