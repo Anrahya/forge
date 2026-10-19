@@ -1,7 +1,7 @@
 {
   "name": "forge-dsh",
   "description": "forge: a verification-first engineering workflow for non-frontier coding models, packaged as a DeepSeek Harness plugin. Per-phase tool policy, playbook re-injection, a verify gate before a turn may end, role-routed subagents, 14 deterministic gates.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",

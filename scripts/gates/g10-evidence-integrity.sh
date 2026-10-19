@@ -3,7 +3,7 @@
 #
 # Why: a report can cite a log that does not exist, or one captured before the
 # last edit. Either way the claim is unproven. This gate reads:
-#   - report.md: the value after every "evidence:" (any case, anywhere on a line);
+#   - report.md and PR.md: the value after every "evidence:" (any case, anywhere on a line);
 #   - decisions.tsv: the column whose header is "evidence".
 # An "evidence:" inside an inline code span is a syntax example and is ignored.
 # Each value is split into tokens. A token is a pointer when it contains "/" or
@@ -25,17 +25,19 @@ forge_parse_args "$@"
 forge_git_init
 
 REPORT="$TASK_DIR/report.md"
+PRMD="$TASK_DIR/PR.md"
 DECISIONS="$TASK_DIR/decisions.tsv"
 if [ ! -f "$REPORT" ] && [ "$PHASE" = report ]; then
   gate_fail "$REPORT does not exist. The report phase must write report.md with an evidence pointer for each claim."
 fi
-if [ ! -f "$REPORT" ] && [ ! -f "$DECISIONS" ]; then
-  gate_skip "neither report.md nor decisions.tsv exists yet in $TASK_DIR, so there are no evidence pointers to check."
+if [ ! -f "$REPORT" ] && [ ! -f "$PRMD" ] && [ ! -f "$DECISIONS" ]; then
+  gate_skip "neither report.md, PR.md nor decisions.tsv exists yet in $TASK_DIR, so there are no evidence pointers to check."
 fi
 
 # values: "source<TAB>value"
 values="$(
-  if [ -f "$REPORT" ]; then
+  for prose in "$REPORT" "$PRMD"; do
+    [ -f "$prose" ] || continue
     awk '
       /^[[:space:]]*```/ { fence = !fence; next }
       fence { next }
@@ -54,8 +56,8 @@ values="$(
         v = substr(line, p + 9); gsub(/\*\*/, "", v)
         print FILENAME ":" FNR "\t" v
       }
-    ' "$REPORT"
-  fi
+    ' "$prose"
+  done
   if [ -f "$DECISIONS" ]; then
     awk -F'\t' '
       FNR == 1 { for (i = 1; i <= NF; i++) { h = tolower($i); gsub(/[[:space:]]/, "", h); if (h == "evidence") col = i }

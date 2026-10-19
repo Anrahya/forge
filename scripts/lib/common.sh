@@ -73,14 +73,14 @@ forge_task_type() {
   local t
   t="$(forge_meta type)"
   case "$t" in
-    bug|feature|refactor|perf|investigate|research|chore) printf '%s\n' "$t" ;;
+    bug|feature|refactor|perf|investigate|research|chore|review) printf '%s\n' "$t" ;;
     *) return 1 ;;
   esac
 }
 
 forge_require_type() {
   forge_require_task
-  TASK_TYPE="$(forge_task_type)" || gate_fail "task.md front matter has no valid 'type' (got '$(forge_meta type)'). Set type to one of bug, feature, refactor, perf, investigate, research, chore."
+  TASK_TYPE="$(forge_task_type)" || gate_fail "task.md front matter has no valid 'type' (got '$(forge_meta type)'). Set type to one of bug, feature, refactor, perf, investigate, research, chore, review."
 }
 
 # ---------- git and the diff under test ----------

@@ -12,7 +12,7 @@ You own the task. You do not write the code in this context. Each phase runs in 
 ## 1. Intake
 
 1. Run `micro/sharpen` and `micro/in-your-own-words` on the request. Write the restatement in the reply.
-2. Classify the type. One of: `bug`, `feature`, `refactor`, `perf`, `investigate`, `research`, `chore`, `prototype`. When two fit, take the narrower one.
+2. Classify the type. One of: `bug`, `feature`, `refactor`, `perf`, `investigate`, `research`, `chore`, `prototype`, `pr-review`. When two fit, take the narrower one. `/forge review <target>` is always `pr-review` and skips to its playbook, which creates the task dir itself. `/forge open pr` on a finished task runs the `opening-a-pr` playbook instead of a new task.
 3. Create the task: `$FORGE_HOME/scripts/forge-task.sh new <slug>` prints the task id, creates `.forge/<id>/` from `$FORGE_HOME/templates/`, writes `.forge/current`, and sets `state.json` to `intake`.
 4. Fill `task.md`. Acceptance criteria are commands with expected outcomes. If you cannot write one, that is stop condition S1: ask, with the specific criterion you could not make runnable.
 5. Open the playbook at `playbooks/<type>.md`. Copy its steps into the todo list verbatim before any task-specific items. A step you skip stays in the list as `skip: <reason>`.
@@ -29,6 +29,9 @@ You own the task. You do not write the code in this context. Each phase runs in 
 | research | no | yes | no | no | yes | yes | yes |
 | chore | yes | no | no | yes | yes | no | yes |
 | prototype | yes | optional | no | yes (scratch) | no | no | yes |
+| pr-review | light | no | no | no | yes | yes | yes |
+
+`opening-a-pr` is not a type. It runs after any type that produced a diff, when the human asks for a PR.
 
 ## 3. Running a phase
 

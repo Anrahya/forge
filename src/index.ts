@@ -301,6 +301,7 @@ export function apply(ctx: Context, config?: Partial<Config>): void {
       prompt: { type: 'string', required: true, description: 'Complete, self-contained brief. Point at .forge/<task>/ files instead of pasting them.' },
       role: { type: 'string', enum: ROLES, required: true, description: 'forge role: ground, scout, shape, build, review, report, or escalation.' },
       run_in_background: { type: 'boolean', description: 'Default true: return a subagent id now; the result is delivered to you as a message when the child finishes. false waits for the result.' },
+      avoid_family: { type: 'string', description: 'Optional. Pick the first forge.toml candidate for this role outside this model family (the "family" of an earlier spawn result). Used for the second reviewer of a panel.' },
     },
     output: {
       schema: { type: 'json' },
@@ -309,7 +310,7 @@ export function apply(ctx: Context, config?: Partial<Config>): void {
     async execute(args, exec) {
       const parsed = parseSpawnArgs(args)
       const loaded = tomlCache.load(cwdOf(exec.agent))
-      const plan = planSpawn(loaded.config, parsed.role)
+      const plan = planSpawn(loaded.config, parsed.role, parsed.avoidFamily)
       const result = await executeSpawn<Agent, SessionId>(parsed, plan, {
         subagents: ctx.get('subagents'),
         providerName: cfg.spawnProvider,

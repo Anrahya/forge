@@ -64,6 +64,8 @@ export interface SpawnArgs {
   readonly prompt: string
   readonly role: Role
   readonly runInBackground: boolean
+  /** Model family to steer away from, for the second reviewer of a panel. */
+  readonly avoidFamily?: string
 }
 
 export interface SpawnPlan {
@@ -83,12 +85,13 @@ export function parseSpawnArgs(args: Record<string, unknown>): SpawnArgs {
   if (description === '') throw new Error('forge_spawn: description is required')
   if (prompt.trim() === '') throw new Error('forge_spawn: prompt is required; the child does not see this conversation')
   if (!isRole(role)) throw new Error('forge_spawn: role must be one of ground, scout, shape, build, review, report, escalation')
-  return { description, prompt, role, runInBackground: args.run_in_background !== false }
+  const avoid = typeof args.avoid_family === 'string' ? args.avoid_family.trim() : ''
+  return { description, prompt, role, runInBackground: args.run_in_background !== false, ...avoid === '' ? {} : { avoidFamily: avoid } }
 }
 
 /** Route selection: forge.toml mapping, else inherit the parent's route. */
-export function planSpawn(config: ForgeToml, role: Role): SpawnPlan {
-  const resolved = resolveRole(config, role)
+export function planSpawn(config: ForgeToml, role: Role, avoidFamily?: string): SpawnPlan {
+  const resolved = resolveRole(config, role, avoidFamily === undefined ? [] : [avoidFamily])
   if (resolved.inherit) return { role, inherit: true, note: resolved.reason }
   return {
     role,
@@ -101,8 +104,8 @@ export function planSpawn(config: ForgeToml, role: Role): SpawnPlan {
 }
 
 export type SpawnResult =
-  | { kind: 'activation'; subagentId: string; role: Role; route: string; note?: string }
-  | { kind: 'foreground'; runId: string; role: Role; route: string; stopReason: string; output: string; diagnostic?: string; note?: string }
+  | { kind: 'activation'; subagentId: string; role: Role; route: string; family?: string; note?: string }
+  | { kind: 'foreground'; runId: string; role: Role; route: string; family?: string; stopReason: string; output: string; diagnostic?: string; note?: string }
 
 function routeLabel(plan: SpawnPlan): string {
   return plan.route === undefined ? 'inherit' : `${plan.route.provider}/${plan.route.model}`
@@ -144,6 +147,7 @@ export async function executeSpawn<Parent, Id extends string>(args: SpawnArgs, p
   const prompt: TextBlockShape[] = [{ type: 'text', text: args.prompt }]
   const route = routeLabel(plan)
   const note = plan.note === undefined ? {} : { note: plan.note }
+  const family = plan.family === undefined ? {} : { family: plan.family }
   const agentOptions = plan.agentOptions === undefined ? {} : { agentOptions: plan.agentOptions }
 
   const childId = deps.newChildId()
@@ -165,7 +169,7 @@ export async function executeSpawn<Parent, Id extends string>(args: SpawnArgs, p
   if (activation.childId !== childId) { deps.forget(childId); deps.remember(activation.childId, args.role) }
 
   if (args.runInBackground) {
-    return { kind: 'activation', subagentId: activation.childId, role: args.role, route, ...note }
+    return { kind: 'activation', subagentId: activation.childId, role: args.role, route, ...family, ...note }
   }
   try {
     const result = await activation.result
@@ -174,6 +178,7 @@ export async function executeSpawn<Parent, Id extends string>(args: SpawnArgs, p
       runId: activation.childId,
       role: args.role,
       route,
+      ...family,
       stopReason: result.stopReason,
       output: textOf(result.output),
       ...result.diagnostic === undefined ? {} : { diagnostic: result.diagnostic },

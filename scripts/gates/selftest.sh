@@ -700,6 +700,11 @@ EOF
   rt "$d" green
   printf '2026-10-20\tbuild\tsecond decision\tbecause\t\tVERIFIED\n' >> "$d/.forge/t1/decisions.tsv"
   check g10 "decisions.tsv row with an empty evidence cell" 1 "has no file pointer" "$d" g10-evidence-integrity.sh
+  sed -i.bak '/second decision/d' "$d/.forge/t1/decisions.tsv"
+  printf '## Verification\n\nTests pass. evidence: .forge/t1/green.log\n' > "$d/.forge/t1/PR.md"
+  check g10 "PR.md with a good pointer" 0 "" "$d" g10-evidence-integrity.sh
+  printf 'Benchmarks ran. evidence: .forge/t1/nope.log\n' >> "$d/.forge/t1/PR.md"
+  check g10 "PR.md with a dangling pointer" 1 "nope.log' does not exist" "$d" g10-evidence-integrity.sh
 fi
 
 # ---------- G11 referee-readonly ----------

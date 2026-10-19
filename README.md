@@ -11,7 +11,7 @@ For an agent or a person. The repository root is the plugin package and `lib/` i
 Web profile, from a terminal:
 
 ```sh
-dsh plugin --profile web add github:Anrahya/forge#v0.1.0
+dsh plugin --profile web add github:Anrahya/forge#v0.2.0
 ```
 
 Then restart the Web Host once and reload the page. Check the layer loaded:
@@ -20,13 +20,13 @@ Then restart the Web Host once and reload the page. Check the layer loaded:
 dsh --profile web --dump-config | grep forge-dsh
 ```
 
-Desktop app: open Settings, then Plugins, then Add plugin, and enter `github:Anrahya/forge#v0.1.0` in "Package name or address". Reload when the app asks.
+Desktop app: open Settings, then Plugins, then Add plugin, and enter `github:Anrahya/forge#v0.2.0` in "Package name or address". Reload when the app asks.
 
 Startup logs print `[forge-dsh] loaded forgeRoot=<path>`. Remove with `dsh plugin --profile web remove forge-dsh`.
 
 pnpm prints "Issues with peer dependencies found" during the add. That is expected: the plugin's peers are DSH's own packages, which the running host supplies at load time rather than the profile installing a second copy (DSH `docs/user/develop/basic/publish.md`).
 
-Verified on 2026-10-20 with dsh 0.2.1-rc.2: `dsh plugin --profile <name> add github:Anrahya/forge#v0.1.0` creates the profile, registers the bundle, and `--dump-config` shows the `forge-dsh` layer; the plugin module imports and waits on the `tools` and `skills` services. A full host boot with a real task has not been run yet.
+Verified on 2026-10-20 with dsh 0.2.1-rc.2 against the v0.1.0 tag (v0.2.0 has the same package layout): `dsh plugin --profile <name> add github:Anrahya/forge#v0.1.0` creates the profile, registers the bundle, and `--dump-config` shows the `forge-dsh` layer; the plugin module imports and waits on the `tools` and `skills` services. A full host boot with a real task has not been run yet.
 
 Requirements: DSH 0.2.1-rc.2 (also accepts 0.2.0-rc.2, where only `forge_spawn` is expected to fail), Node 22.19 or newer, bash, git. The gate scripts need the target project's own toolchain (node and npm for TypeScript, cargo for Rust).
 
@@ -36,6 +36,8 @@ In a project, type `/forge <task>`. The router classifies the task, opens its pl
 
 Configure which model plays which role in `forge.toml` at your project root (copy the one here). The reviewer defaults to a different model family than the builder.
 
+Review any pull request, branch, or range without a forge task: `/forge review 42`, `/forge review feature/x`, or `/forge review main..feature/x`. The review runs in a fresh context on a different model family than the builder; when `forge.toml` lists reviewers from two families, it runs a two-reviewer panel and a lead pass merges the findings with a reason per dismissal. Nothing is posted to GitHub unless you say so. To open a PR from a finished task, say `/forge open pr`: the branch gets small ordered commits and a body built from the report with evidence pointers that gates G10 and G12 check first.
+
 For runtime verification on a real app surface, run `/forge-verify-setup` once per project. It writes a project-local skill that launches, drives, and captures evidence from the app, which gate G9 then executes.
 
 ## What is here
@@ -43,14 +45,15 @@ For runtime verification on a real app surface, run `/forge-verify-setup` once p
 | Path | What |
 |---|---|
 | `AGENTS.md` | The contract every phase reads, plus the 24-principle index |
-| `skills/forge/` | The router and the eight playbooks |
-| `skills/forge-*/` | Phase skills: ground, scout, shape, build, review, report, verify-setup, verify-maintain, correct |
+| `skills/forge/` | The router and the ten playbooks |
+| `skills/forge-*/` | Phase skills: ground, scout, shape, build, review, report, pr-review, verify-setup, verify-maintain, correct |
 | `skills/principles/` | One leaf per principle, loaded on demand |
 | `skills/micro/` | sharpen, in-your-own-words, bro, unslop, tdd, benchmark-checklist, blast-radius |
 | `templates/` | The artifact each phase writes; gate G0 checks the headings |
 | `scripts/gates/` | Fourteen deterministic gates with a self-test (`npm run selftest`) |
 | `scripts/forge-verify.sh` | Runs a phase's gates and writes verify.log |
 | `scripts/forge-task.sh` | Creates a task dir and tracks the phase |
+| `scripts/forge-pr.sh` | Resolves a PR, branch, or range into a review task; posts a review; opens a PR from PR.md |
 | `src/`, `lib/` | The DSH plugin: tool policy, playbook re-injection, the done-gate, role-routed spawn |
 | `adapters/claude-code/` | The same four hooks for Claude Code |
 | `evals/` | Bare vs forge comparison harness |

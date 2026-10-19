@@ -289,7 +289,7 @@ describe('forge_spawn', () => {
         forget: id => { roles.delete(id) },
       },
     )
-    assert.deepEqual(result, { kind: 'activation', subagentId: 'child-1', role: 'review', route: 'openrouter/qwen/qwen3-coder' })
+    assert.deepEqual(result, { kind: 'activation', subagentId: 'child-1', role: 'review', route: 'openrouter/qwen/qwen3-coder', family: 'qwen' })
     assert.equal(roles.get('child-1'), 'review')
     const spec = calls[0]!.arg as { childId: string; label: string; delivery: string; request: { agentOptions?: unknown; prompt: unknown } }
     assert.equal(spec.childId, 'child-1')
@@ -314,6 +314,21 @@ describe('forge_spawn', () => {
     assert.equal('agentOptions' in start.request, false)
     assert.equal(start.delivery, 'caller')
     assert.equal(calls.at(-1)!.kind, 'dispose')
+  })
+
+  it('avoid_family picks the next candidate from another family and reports the family', async () => {
+    const { config } = parseForgeToml('[roles]\nbuild = "deepseek-official/deepseek-chat"\nreview = ["openrouter/z-ai/glm-5", "deepseek-official/deepseek-reasoner", "openrouter/qwen/qwen3-coder"]\n[families]\n"glm-5" = "glm"\n')
+    const first = planSpawn(config, 'review')
+    assert.equal(first.family, 'glm')
+    const second = planSpawn(config, 'review', 'glm')
+    assert.deepEqual(second.route, { provider: 'deepseek-official', model: 'deepseek-reasoner' })
+    assert.equal(second.family, 'deepseek')
+    const none = planSpawn(parseForgeToml('[roles]\nreview = "openrouter/z-ai/glm-5"\n[families]\n"glm-5" = "glm"\n').config, 'review', 'glm')
+    assert.match(none.note ?? '', /no review candidate outside the glm family/)
+    assert.equal(parseSpawnArgs({ description: 'd', prompt: 'p', role: 'review', avoid_family: ' glm ' }).avoidFamily, 'glm')
+    const { subagents } = fakeSubagents()
+    const result = await executeSpawn(parseSpawnArgs({ description: 'd', prompt: 'p', role: 'review' }), first, { subagents, providerName: 'spawn', parent, signal: new AbortController().signal, newChildId: () => 'c1', remember: () => {}, forget: () => {} })
+    assert.equal(result.family, 'glm')
   })
 
   it('forgets the reserved id when start fails', async () => {

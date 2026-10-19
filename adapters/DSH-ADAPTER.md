@@ -27,7 +27,7 @@ The repository root is the package, and `lib/` is committed, so a git install ne
 
 ```sh
 dsh plugin --profile web add github:Anrahya/forge          # tracks the default branch
-dsh plugin --profile web add github:Anrahya/forge#v0.1.0   # pinned, preferred
+dsh plugin --profile web add github:Anrahya/forge#v0.2.0   # pinned, preferred
 dsh --profile web --dump-config                            # shows a "# == forge-dsh" layer
 ```
 

@@ -63,6 +63,8 @@ export type RoleResolution = {
  * Pick the route for a role. Unmapped roles inherit the parent conversation's
  * route. The review role prefers the first candidate whose family differs from
  * build's, so the reviewer is a different model family when both are
- * configured (DESIGN.md section 3, REVIEW).
+ * configured (DESIGN.md section 3, REVIEW). `avoidFamilies` picks the first
+ * candidate outside those families instead, which is how a review panel gets
+ * its second reviewer from a different family than the first.
  */
-export declare function resolveRole(config: ForgeToml, role: Role): RoleResolution;
+export declare function resolveRole(config: ForgeToml, role: Role, avoidFamilies?: readonly string[]): RoleResolution;

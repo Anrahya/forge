@@ -56,6 +56,8 @@ export interface SpawnArgs {
     readonly prompt: string;
     readonly role: Role;
     readonly runInBackground: boolean;
+    /** Model family to steer away from, for the second reviewer of a panel. */
+    readonly avoidFamily?: string;
 }
 export interface SpawnPlan {
     readonly role: Role;
@@ -68,18 +70,20 @@ export interface SpawnPlan {
 /** Validate model arguments. Throws with a model-readable message. */
 export declare function parseSpawnArgs(args: Record<string, unknown>): SpawnArgs;
 /** Route selection: forge.toml mapping, else inherit the parent's route. */
-export declare function planSpawn(config: ForgeToml, role: Role): SpawnPlan;
+export declare function planSpawn(config: ForgeToml, role: Role, avoidFamily?: string): SpawnPlan;
 export type SpawnResult = {
     kind: 'activation';
     subagentId: string;
     role: Role;
     route: string;
+    family?: string;
     note?: string;
 } | {
     kind: 'foreground';
     runId: string;
     role: Role;
     route: string;
+    family?: string;
     stopReason: string;
     output: string;
     diagnostic?: string;
