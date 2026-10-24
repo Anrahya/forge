@@ -1,4 +1,0 @@
-# Local development overlay: relative entry, for `dsh --patch cordis.yml` or dshx.
-- insert:
-    - id: forge-dsh
-      name: './src/index.ts'
